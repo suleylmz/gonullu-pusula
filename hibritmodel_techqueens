@@ -4,14 +4,14 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from scipy.sparse.linalg import svds
 
-# 1?? Örnek Veri Kümesi (Etkinlikler ve Kullanıcı Puanları)
+# 1?? Ã–rnek Veri KÃ¼mesi (Etkinlikler ve KullanÃ½cÃ½ PuanlarÃ½)
 events = pd.DataFrame({
     'event_id': [1, 2, 3, 4, 5],
     'name': ['Ana Ocagi Projesi', 'Sifa Oyuncaklari', 'Hayata Renk Kat', 'Oyun Arkadasim', 'Down Sendromlu Cocuklara Etkinlik'],
     'description': ['Sehitlik ziyareti',
                     'Hasta cocuklara elyapimi oyuncak hediyesi',
                     'Okullarda duvar boyama',
-                    'Dezavantajli cocuklarla ablalık ve abilik',
+                    'Dezavantajli cocuklarla ablalÃ½k ve abilik',
                     'Down sendromlu bireylerle vakit gecirme']
 })
 
@@ -21,8 +21,8 @@ ratings = pd.DataFrame({
     'rating': [5, 4, 5, 3, 2, 5, 4, 4, 3, 5]
 })
 
-# 2?? İçerik Tabanlı Filtreleme (TF-IDF + Cosine Similarity)
-tfidf = TfidfVectorizer(stop_words=None)  # stop_words parametresi None olarak değiştirildi
+# 2?? ÃÃ§erik TabanlÃ½ Filtreleme (TF-IDF + Cosine Similarity)
+tfidf = TfidfVectorizer(stop_words=None)  # stop_words parametresi None olarak deÃ°iÃ¾tirildi
 tfidf_matrix = tfidf.fit_transform(events['description'])
 cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
 
@@ -33,7 +33,7 @@ def content_based_recommend(event_id, top_n=2):
     event_indices = [i[0] for i in scores]
     return events.iloc[event_indices][['event_id', 'name']]
 
-# 3?? İşbirlikçi Filtreleme (SVD ile Kullanıcı Bazlı Öneri)
+# 3?? ÃÃ¾birlikÃ§i Filtreleme (SVD ile KullanÃ½cÃ½ BazlÃ½ Ã–neri)
 user_event_matrix = ratings.pivot(index='user_id', columns='event_id', values='rating').fillna(0)
 U, sigma, Vt = svds(user_event_matrix.values, k=2)
 sigma = np.diag(sigma)
@@ -45,19 +45,19 @@ def collaborative_recommend(user_id, top_n=2):
     recommendations = recommendations.sort_values(ascending=False).head(top_n)
     return events[events['event_id'].isin(recommendations.index)][['event_id', 'name']]
 
-# 4?? Hibrit Model: İçerik ve İşbirlikçi Filtrelemeyi Birleştirme
+# 4?? Hibrit Model: ÃÃ§erik ve ÃÃ¾birlikÃ§i Filtrelemeyi BirleÃ¾tirme
 def hybrid_recommend(user_id, event_id, alpha=0.5, top_n=2):
     content_rec = content_based_recommend(event_id, top_n)
     collab_rec = collaborative_recommend(user_id, top_n)
     hybrid_rec = pd.concat([content_rec, collab_rec]).drop_duplicates().head(top_n)
     return hybrid_rec
 
-# Örnek Kullanım
-print("\n?? İçerik Tabanlı Öneriler:")
+# Ã–rnek KullanÃ½m
+print("\n?? ÃÃ§erik TabanlÃ½ Ã–neriler:")
 print(content_based_recommend(2))
 
-print("\n?? İşbirlikçi Filtreleme Önerileri:")
+print("\n?? ÃÃ¾birlikÃ§i Filtreleme Ã–nerileri:")
 print(collaborative_recommend(1))
 
-print("\n?? Hibrit Öneri Sistemi Sonucu:")
+print("\n?? Hibrit Ã–neri Sistemi Sonucu:")
 print(hybrid_recommend(1, 2))
